@@ -2,49 +2,61 @@
 
 <html>
 <head>
-<style>
-    body {
-        background-color: #1e1e2f;
-        color: white;
-        text-align: center;
-        font-family: Arial;
+    <title>Mi música</title>
+    <style>
+        body {
+            background: #111;
+            color: white;
+            text-align: center;
+            font-family: Arial;
+        }
+
+```
+    .card {
+        background: #222;
+        padding: 20px;
+        margin: 50px auto;
+        width: 300px;
+        border-radius: 15px;
     }
 
-```
-.card {
-    background-color: #2c2c3e;
-    padding: 20px;
-    border-radius: 15px;
-    width: 300px;
-    margin: 100px auto;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-}
+    img {
+        width: 100%;
+        border-radius: 10px;
+    }
 
-button {
-    background-color: #ff4c60;
-    border: none;
-    padding: 10px 20px;
-    color: white;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #ff6b81;
-}
-```
-
+    button {
+        margin-top: 10px;
+        padding: 10px;
+        border: none;
+        border-radius: 10px;
+        background: #1db954;
+        color: white;
+        cursor: pointer;
+    }
 </style>
+```
+
 </head>
 
 <body>
 
+<h1>🎵 Mi música favorita</h1>
+
 <div class="card">
-    <h1>Mi Web 😎</h1>
-    <p>Bienvenido a mi primera página bonita</p>
-    <button onclick="alert('Hola! 👋')">Haz clic</button>
+    <img src="https://via.placeholder.com/300">
+    <h2>Mi canción</h2>
+    <p>Artista</p>
+    <button onclick="reproducir()">▶ Reproducir</button>
 </div>
+
+<audio id="audio" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+
+<script>
+function reproducir() {
+    document.getElementById("audio").play();
+}
+</script>
 
 </body>
 </html>
-
