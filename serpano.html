@@ -40,6 +40,13 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:v
 <h1>📖 Diccionario<br>de Serpano</h1>
 <p>Busca palabras de Serpano, consulta su significado en español o filtra por letra. La letra especial <strong>ņ</strong> representa el sonido de la ñ española. «Halo» es la forma oficial de decir «hola» en esta versión.</p>
 </header>
+<section class="translator" aria-label="Language selector" style="margin-top:16px">
+<label for="siteLanguage" id="languageLabel">🌐 Idioma de la página / Page language / 页面语言</label>
+<select id="siteLanguage" aria-label="Choose page language">
+<option value="es">🇪🇸 Español</option><option value="en">🇬🇧 English</option><option value="zh-CN">🇨🇳 中文（简体）</option><option value="zh-TW">🇹🇼 中文（繁體）</option><option value="ar">🇸🇦 العربية</option><option value="fr">🇫🇷 Français</option><option value="pt">🇵🇹 Português</option><option value="ca">🏴 Català</option><option value="de">🇩🇪 Deutsch</option><option value="it">🇮🇹 Italiano</option><option value="ja">🇯🇵 日本語</option><option value="ko">🇰🇷 한국어</option><option value="hi">🇮🇳 हिन्दी</option><option value="ur">🇵🇰 اردو</option><option value="ru">🇷🇺 Русский</option><option value="uk">🇺🇦 Українська</option><option value="tr">🇹🇷 Türkçe</option><option value="nl">🇳🇱 Nederlands</option><option value="pl">🇵🇱 Polski</option><option value="ro">🇷🇴 Română</option><option value="bn">🇧🇩 বাংলা</option><option value="id">🇮🇩 Bahasa Indonesia</option><option value="vi">🇻🇳 Tiếng Việt</option><option value="th">🇹🇭 ไทย</option><option value="fa">🇮🇷 فارسی</option><option value="he">🇮🇱 עברית</option><option value="el">🇬🇷 Ελληνικά</option><option value="sv">🇸🇪 Svenska</option><option value="sw">🇹🇿 Kiswahili</option><option value="sr">🇷🇸 Српски</option><option value="eo">🌍 Esperanto</option><option value="serpano">📖 Serpano</option>
+</select>
+<p class="small-note" id="languageNote">Elige el idioma de la interfaz. Serpano mantiene sus palabras originales.</p>
+</section>
 <section class="controls" aria-label="Buscar palabras">
 <input id="search" type="search" placeholder="Buscar en Serpano o en español…" aria-label="Buscar palabras">
 <div class="meta"><span id="count">Cargando diccionario…</span><button class="clear" id="reset" type="button">Limpiar filtros</button></div>
@@ -170,5 +177,43 @@ async function translateToSerpano(){
  }
 }
 document.querySelector("#translateBtn").addEventListener("click",translateToSerpano);
+
+// Selector de idioma: traduce la interfaz al idioma elegido y conserva las palabras de Serpano.
+const uiOriginal={
+title:document.title,h1:document.querySelector("h1").innerHTML,kicker:document.querySelector(".kicker").textContent,
+intro:document.querySelector(".hero p").textContent,search:document.querySelector("#search").placeholder,
+reset:document.querySelector("#reset").textContent,translator:document.querySelector("#translator-title").textContent,
+translateIntro:document.querySelector("#translator-title").nextElementSibling.textContent,
+input:document.querySelector('label[for="sourceText"]').textContent,button:document.querySelector("#translateBtn").textContent,
+note:document.querySelector("#languageNote").textContent,footer:document.querySelector("footer").textContent
+};
+const languageFixed={
+"zh-CN":{title:"塞尔帕诺语词典",h1:"📖 塞尔帕诺语词典",kicker:"人工创作的语言 · 初始版本",intro:"搜索塞尔帕诺语词汇，查看西班牙语释义，或按字母筛选。特殊字母 ņ 的发音类似西班牙语 ñ。“Halo”是本版本中“你好”的正式说法。",search:"搜索塞尔帕诺语或西班牙语…",reset:"清除筛选",translator:"🌍 塞尔帕诺语翻译器",translateIntro:"输入任意语言的句子。翻译器会尝试识别语言、翻译成西班牙语，再转换词典中已有的塞尔帕诺语词汇。",input:"要翻译的文本",button:"翻译成塞尔帕诺语",note:"选择界面语言。塞尔帕诺语词汇保持不变。",footer:"这是塞尔帕诺语的初始词汇表，可以继续扩展。部分词汇仍是暂定的。"},
+"zh-TW":{title:"塞爾帕諾語詞典",h1:"📖 塞爾帕諾語詞典",kicker:"人工創作的語言 · 初始版本",intro:"搜尋塞爾帕諾語詞彙、查看西班牙語釋義，或依字母篩選。特殊字母 ņ 的發音類似西班牙語 ñ。「Halo」是本版本中「你好」的正式說法。",search:"搜尋塞爾帕諾語或西班牙語…",reset:"清除篩選",translator:"🌍 塞爾帕諾語翻譯器",translateIntro:"輸入任何語言的句子。翻譯器會嘗試辨識語言、翻譯成西班牙語，再轉換詞典中已有的塞爾帕諾語詞彙。",input:"要翻譯的文字",button:"翻譯成塞爾帕諾語",note:"選擇介面語言。塞爾帕諾語詞彙保持不變。",footer:"這是塞爾帕諾語的初始詞彙表，可以繼續擴充。部分詞彙仍是暫定的。"},
+"en":{title:"Serpano Dictionary",h1:"📖 Serpano Dictionary",kicker:"Invented language · Initial version",intro:"Search Serpano words, see their Spanish meanings, or filter by letter. The special letter ņ represents the Spanish ñ sound. “Halo” is the official word for “hello” in this version.",search:"Search Serpano or Spanish…",reset:"Clear filters",translator:"🌍 Translator to Serpano",translateIntro:"Write a sentence in any language. The translator tries to detect it, translate it into Spanish, then convert words found in the Serpano dictionary.",input:"Text to translate",button:"Translate to Serpano",note:"Choose the interface language. Serpano words stay unchanged.",footer:"This is the initial Serpano vocabulary and can be expanded. Some words are provisional."},
+"fr":{title:"Dictionnaire de Serpano",h1:"📖 Dictionnaire de Serpano",kicker:"Langue inventée · Version initiale",intro:"Recherchez des mots en Serpano, consultez leur sens en espagnol ou filtrez par lettre. La lettre ņ représente le son espagnol ñ. « Halo » signifie officiellement bonjour dans cette version.",search:"Rechercher en Serpano ou en espagnol…",reset:"Effacer les filtres",translator:"🌍 Traducteur vers le Serpano",translateIntro:"Écrivez une phrase dans n’importe quelle langue. Le traducteur essaie de la traduire en espagnol puis de convertir les mots connus en Serpano.",input:"Texte à traduire",button:"Traduire en Serpano",note:"Choisissez la langue de l’interface. Les mots Serpano restent inchangés.",footer:"Voici le vocabulaire initial du Serpano. Certains mots sont provisoires."},
+"ca":{title:"Diccionari de Serpano",h1:"📖 Diccionari de Serpano",kicker:"Llengua inventada · Versió inicial",intro:"Cerca paraules en Serpano, consulta'n el significat en espanyol o filtra per lletra. La lletra ņ representa el so de la ñ espanyola. «Halo» és la forma oficial de dir hola en aquesta versió.",search:"Cerca en Serpano o en espanyol…",reset:"Neteja els filtres",translator:"🌍 Traductor al Serpano",translateIntro:"Escriu una frase en qualsevol idioma. El traductor intentarà traduir-la a l'espanyol i convertir les paraules que existeixin al diccionari.",input:"Text que vols traduir",button:"Tradueix al Serpano",note:"Tria l'idioma de la interfície. Les paraules de Serpano no es tradueixen.",footer:"Aquest és el vocabulari inicial del Serpano. Algunes paraules són provisionals."}
+};
+async function setPageLanguage(lang){
+ document.documentElement.lang=lang==="serpano"?"es":lang;
+ document.documentElement.dir=["ar","fa","ur","he"].includes(lang)?"rtl":"ltr";
+ let t=languageFixed[lang];
+ if(lang==="es"||lang==="serpano"){
+  t={title:uiOriginal.title,h1:uiOriginal.h1,kicker:uiOriginal.kicker,intro:uiOriginal.intro,search:uiOriginal.search,reset:uiOriginal.reset,translator:uiOriginal.translator,translateIntro:uiOriginal.translateIntro,input:uiOriginal.input,button:uiOriginal.button,note:uiOriginal.note,footer:uiOriginal.footer};
+ }else if(!t){
+  t={};const source={title:"Diccionario de Serpano",h1:"Diccionario de Serpano",kicker:uiOriginal.kicker,intro:uiOriginal.intro,search:uiOriginal.search,reset:uiOriginal.reset,translator:uiOriginal.translator,translateIntro:uiOriginal.translateIntro,input:uiOriginal.input,button:uiOriginal.button,note:uiOriginal.note,footer:uiOriginal.footer};
+  try{
+   await Promise.all(Object.entries(source).map(async([key,value])=>{
+    const url="https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl="+encodeURIComponent(lang)+"&dt=t&q="+encodeURIComponent(value);
+    const res=await fetch(url);if(!res.ok)throw new Error("translation");const data=await res.json();t[key]=(data[0]||[]).map(p=>p[0]||"").join("");
+   }));
+  }catch(e){document.querySelector("#languageNote").textContent="Translation service unavailable. Check your internet connection.";return;}
+ }
+ document.title=t.title;document.querySelector("h1").textContent=t.h1;document.querySelector(".kicker").textContent=t.kicker;document.querySelector(".hero p").textContent=t.intro;
+ document.querySelector("#search").placeholder=t.search;document.querySelector("#reset").textContent=t.reset;document.querySelector("#translator-title").textContent=t.translator;document.querySelector("#translator-title").nextElementSibling.textContent=t.translateIntro;
+ document.querySelector('label[for="sourceText"]').textContent=t.input;document.querySelector("#sourceText").placeholder=t.input;document.querySelector("#translateBtn").textContent=t.button;document.querySelector("#languageNote").textContent=t.note;document.querySelector("footer").textContent=t.footer;
+ document.querySelector("#languageLabel").textContent="🌐 "+document.querySelector("#siteLanguage").selectedOptions[0].textContent;
+}
+document.querySelector("#siteLanguage").addEventListener("change",e=>setPageLanguage(e.target.value));
 renderAlphabet();renderResults();
 </script></body></html>
