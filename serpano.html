@@ -268,5 +268,27 @@ async function setPageLanguage(lang){
  renderResults();
 }
 document.querySelector("#siteLanguage").addEventListener("change",e=>setPageLanguage(e.target.value));
-renderAlphabet();renderResults();
+renderAlphabet();
+async function initializeDictionary(){
+ const countEl=document.querySelector("#count");
+ const total=entries.length;
+ const batchSize=35;
+ let checked=0;
+ countEl.textContent="Cargando diccionario… 0%";
+ await new Promise(resolve=>setTimeout(resolve,80));
+ while(checked<total){
+   const end=Math.min(checked+batchSize,total);
+   // Procesa el lote actual para preparar las entradas del diccionario.
+   for(let i=checked;i<end;i++){
+     const entry=entries[i];
+     if(!Array.isArray(entry)||entry.length<2) continue;
+   }
+   checked=end;
+   const percent=Math.floor(checked/total*100);
+   countEl.textContent="Cargando diccionario… "+percent+"% · faltan "+(total-checked)+" entradas";
+   if(checked<total) await new Promise(resolve=>setTimeout(resolve,16));
+ }
+ renderResults();
+}
+initializeDictionary();
 </script></body></html>
