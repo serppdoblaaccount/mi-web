@@ -180,7 +180,7 @@ document.querySelector("#translateBtn").addEventListener("click",translateToSerp
 
 // Selector de idioma: traduce la interfaz al idioma elegido y conserva las palabras de Serpano.
 const uiOriginal={
-title:document.title,h1:document.querySelector("h1").innerHTML.replace(/<br\\s*\\/?\\s*>/gi,"\n"),kicker:document.querySelector(".kicker").textContent,
+title:document.title,h1:document.querySelector("h1").innerHTML.replace(/<br\s*\/?\s*>/gi,"\n"),kicker:document.querySelector(".kicker").textContent,
 intro:document.querySelector(".hero p").textContent,search:document.querySelector("#search").placeholder,
 reset:document.querySelector("#reset").textContent,translator:document.querySelector("#translator-title").textContent,
 translateIntro:document.querySelector("#translator-title").nextElementSibling.textContent,
