@@ -139,7 +139,7 @@ function renderResults(){
  results.innerHTML="";
  if(!filtered.length){results.innerHTML='<div class="empty">No se encontraron palabras. Prueba otra búsqueda.</div>';return}
  const groups={};filtered.sort((a,b)=>a[0].localeCompare(b[0],"es")).forEach(entry=>{const letter=entry[0].startsWith("Ņ")?"Ņ":entry[0][0].toLocaleUpperCase("es");(groups[letter]??=[]).push(entry)});
- Object.entries(groups).forEach(([letter,items])=>{const section=document.createElement("section");section.className="letter-section";const h=document.createElement("h2");h.textContent=letter;section.appendChild(h);const grid=document.createElement("div");grid.className="words";items.forEach(([word,meaning])=>{const card=document.createElement("article");card.className="word";const strong=document.createElement("strong");strong.textContent=word;const span=document.createElement("span");span.textContent=meaning;card.append(strong,span);grid.appendChild(card)});section.appendChild(grid);results.appendChild(section)});
+ Object.entries(groups).forEach(([letter,items])=>{const section=document.createElement("section");section.className="letter-section";const h=document.createElement("h2");h.textContent=letter;section.appendChild(h);const grid=document.createElement("div");grid.className="words";items.forEach(([word,meaning])=>{const card=document.createElement("article");card.className="word";const strong=document.createElement("strong");strong.textContent=word;const span=document.createElement("span");span.textContent=meaning;span.dataset.originalMeaning=meaning;card.append(strong,span);grid.appendChild(card);translateDefinition(span)});section.appendChild(grid);results.appendChild(section)});
 }
 search.addEventListener("input",renderResults);
 document.querySelector("#reset").addEventListener("click",()=>{search.value="";activeLetter="";renderAlphabet();renderResults()});
@@ -187,6 +187,26 @@ translateIntro:document.querySelector("#translator-title").nextElementSibling.te
 input:document.querySelector('label[for="sourceText"]').textContent,button:document.querySelector("#translateBtn").textContent,
 note:document.querySelector("#languageNote").textContent,footer:document.querySelector("footer").textContent
 };
+const serpanoUI={title:"Dicenor Serpano",h1:"📖 Dicenor de Serpano",kicker:"Serpano · Version inicial",intro:"Searen palaben Serpano, mirar su significan o filtrar por letren. La letra ņ suena como ñ. «Halo» significa hola.",search:"Searen palaben…",reset:"Limpen filtros",translator:"🌍 Traductor a Serpano",translateIntro:"Escriben una frase. El traductor intenten cambiarla a Serpano usando las palaben del dicenor.",input:"Texto para traducen",button:"Traducen a Serpano",note:"Eligen el idioma de la pagina. Palaben Serpano quedan igual.",footer:"Vocabulario inicial Serpano. Algunas palaben son provisionales."};
+const definitionCache=new Map();
+let definitionLanguage="es";
+async function translateDefinition(span){
+ const original=span.dataset.originalMeaning;
+ if(!original||definitionLanguage==="es")return;
+ if(definitionLanguage==="serpano"){
+  const match=entries.find(([word,meaning])=>normalized(meaning)===normalized(original));
+  span.textContent=match?match[0]:"Significan provisional";
+  return;
+ }
+ const key=definitionLanguage+"|"+original;
+ if(definitionCache.has(key)){span.textContent=definitionCache.get(key);return;}
+ try{
+  const url="https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl="+encodeURIComponent(definitionLanguage)+"&dt=t&q="+encodeURIComponent(original);
+  const res=await fetch(url);if(!res.ok)return;
+  const data=await res.json();const translated=(data[0]||[]).map(p=>p[0]||"").join("");
+  if(translated){definitionCache.set(key,translated);span.textContent=translated;}
+ }catch(e){}
+}
 const languageFixed={
 "zh-CN":{title:"塞尔帕诺语词典",h1:"📖 塞尔帕诺语词典",kicker:"人工创作的语言 · 初始版本",intro:"搜索塞尔帕诺语词汇，查看西班牙语释义，或按字母筛选。特殊字母 ņ 的发音类似西班牙语 ñ。“Halo”是本版本中“你好”的正式说法。",search:"搜索塞尔帕诺语或西班牙语…",reset:"清除筛选",translator:"🌍 塞尔帕诺语翻译器",translateIntro:"输入任意语言的句子。翻译器会尝试识别语言、翻译成西班牙语，再转换词典中已有的塞尔帕诺语词汇。",input:"要翻译的文本",button:"翻译成塞尔帕诺语",note:"选择界面语言。塞尔帕诺语词汇保持不变。",footer:"这是塞尔帕诺语的初始词汇表，可以继续扩展。部分词汇仍是暂定的。"},
 "zh-TW":{title:"塞爾帕諾語詞典",h1:"📖 塞爾帕諾語詞典",kicker:"人工創作的語言 · 初始版本",intro:"搜尋塞爾帕諾語詞彙、查看西班牙語釋義，或依字母篩選。特殊字母 ņ 的發音類似西班牙語 ñ。「Halo」是本版本中「你好」的正式說法。",search:"搜尋塞爾帕諾語或西班牙語…",reset:"清除篩選",translator:"🌍 塞爾帕諾語翻譯器",translateIntro:"輸入任何語言的句子。翻譯器會嘗試辨識語言、翻譯成西班牙語，再轉換詞典中已有的塞爾帕諾語詞彙。",input:"要翻譯的文字",button:"翻譯成塞爾帕諾語",note:"選擇介面語言。塞爾帕諾語詞彙保持不變。",footer:"這是塞爾帕諾語的初始詞彙表，可以繼續擴充。部分詞彙仍是暫定的。"},
@@ -197,9 +217,12 @@ const languageFixed={
 async function setPageLanguage(lang){
  document.documentElement.lang=lang==="serpano"?"es":lang;
  document.documentElement.dir=["ar","fa","ur","he"].includes(lang)?"rtl":"ltr";
+ definitionLanguage=lang;
  let t=languageFixed[lang];
- if(lang==="es"||lang==="serpano"){
+ if(lang==="es"){
   t={title:uiOriginal.title,h1:uiOriginal.h1,kicker:uiOriginal.kicker,intro:uiOriginal.intro,search:uiOriginal.search,reset:uiOriginal.reset,translator:uiOriginal.translator,translateIntro:uiOriginal.translateIntro,input:uiOriginal.input,button:uiOriginal.button,note:uiOriginal.note,footer:uiOriginal.footer};
+ }else if(lang==="serpano"){
+  t=serpanoUI;
  }else if(!t){
   t={};const source={title:"Diccionario de Serpano",h1:"Diccionario de Serpano",kicker:uiOriginal.kicker,intro:uiOriginal.intro,search:uiOriginal.search,reset:uiOriginal.reset,translator:uiOriginal.translator,translateIntro:uiOriginal.translateIntro,input:uiOriginal.input,button:uiOriginal.button,note:uiOriginal.note,footer:uiOriginal.footer};
   try{
@@ -213,6 +236,8 @@ async function setPageLanguage(lang){
  document.querySelector("#search").placeholder=t.search;document.querySelector("#reset").textContent=t.reset;document.querySelector("#translator-title").textContent=t.translator;document.querySelector("#translator-title").nextElementSibling.textContent=t.translateIntro;
  document.querySelector('label[for="sourceText"]').textContent=t.input;document.querySelector("#sourceText").placeholder=t.input;document.querySelector("#translateBtn").textContent=t.button;document.querySelector("#languageNote").textContent=t.note;document.querySelector("footer").textContent=t.footer;
  document.querySelector("#languageLabel").textContent="🌐 "+document.querySelector("#siteLanguage").selectedOptions[0].textContent;
+ document.querySelector("#count").textContent="";
+ renderResults();
 }
 document.querySelector("#siteLanguage").addEventListener("change",e=>setPageLanguage(e.target.value));
 renderAlphabet();renderResults();
