@@ -216,41 +216,46 @@ const languageFixed={
 };
 async function setPageLanguage(lang){
  document.documentElement.lang=lang==="serpano"?"es":lang;
- document.documentElement.dir=["ar","fa","ur","he"].includes(lang)?"rtl":"ltr";
+ document.documentElement.dir=["ar","fa","ur","he","ckb","sd","ks"].includes(lang)?"rtl":"ltr";
  definitionLanguage=lang;
- let t=languageFixed[lang];
+ let t=languageFixed[lang],translationWarning="";
  if(lang==="es"){
   t={title:uiOriginal.title,h1:uiOriginal.h1,kicker:uiOriginal.kicker,intro:uiOriginal.intro,search:uiOriginal.search,reset:uiOriginal.reset,translator:uiOriginal.translator,translateIntro:uiOriginal.translateIntro,input:uiOriginal.input,button:uiOriginal.button,note:uiOriginal.note,footer:uiOriginal.footer};
  }else if(lang==="serpano"){
   t=serpanoUI;
  }else if(!t){
-  t={};const source={title:"Diccionario de Serpano",h1:"Diccionario de Serpano",kicker:uiOriginal.kicker,intro:uiOriginal.intro,search:uiOriginal.search,reset:uiOriginal.reset,translator:uiOriginal.translator,translateIntro:uiOriginal.translateIntro,input:uiOriginal.input,button:uiOriginal.button,note:uiOriginal.note,footer:uiOriginal.footer};
+  t={};
+  const source={title:"Diccionario de Serpano",h1:"Diccionario de Serpano",kicker:uiOriginal.kicker,intro:uiOriginal.intro,search:uiOriginal.search,reset:uiOriginal.reset,translator:uiOriginal.translator,translateIntro:uiOriginal.translateIntro,input:uiOriginal.input,button:uiOriginal.button,note:uiOriginal.note,footer:uiOriginal.footer};
   const fallback=languageFixed.en;
-  const tasks=await Promise.allSettled(Object.entries(source).map(async([key,value])=>{
-    const cacheKey=lang+"|ui|"+value;
-    if(definitionCache.has(cacheKey))return [key,definitionCache.get(cacheKey)];
-    const url="https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl="+encodeURIComponent(lang)+"&dt=t&q="+encodeURIComponent(value);
-    const res=await fetch(url);
-    if(!res.ok)throw new Error("Language not supported");
-    const data=await res.json();
-    const translated=(data[0]||[]).map(p=>p[0]||"").join("");
-    if(!translated)throw new Error("Empty translation");
-    definitionCache.set(cacheKey,translated);
-    return [key,translated];
-  }));
   let failures=0;
-  tasks.forEach((task,index)=>{
-    const key=Object.keys(source)[index];
-    if(task.status==="fulfilled")t[task.value[0]]=task.value[1];
-    else{t[key]=fallback[key]||source[key];failures++;}
-  });
-  if(failures)document.querySelector("#languageNote").textContent=failures===Object.keys(source).length
-    ?"Este idioma puede no estar disponible en el traductor; la interfaz se muestra en inglés como alternativa."
+  // Translate one item at a time to avoid overwhelming the public translation endpoint.
+  for(const [key,value] of Object.entries(source)){
+   const cacheKey=lang+"|ui|"+value;
+   if(definitionCache.has(cacheKey)){t[key]=definitionCache.get(cacheKey);continue;}
+   let translated="";
+   for(let attempt=0;attempt<2&&!translated;attempt++){
+    try{
+     const url="https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl="+encodeURIComponent(lang)+"&dt=t&q="+encodeURIComponent(value);
+     const res=await fetch(url);
+     if(!res.ok)throw new Error("Translation unavailable");
+     const data=await res.json();
+     translated=(data[0]||[]).map(p=>p[0]||"").join("").trim();
+     if(!translated)throw new Error("Empty translation");
+     definitionCache.set(cacheKey,translated);
+    }catch(e){
+     if(attempt===0)await new Promise(resolve=>setTimeout(resolve,250));
+    }
+   }
+   if(translated)t[key]=translated;
+   else{t[key]=fallback[key]||value;failures++;}
+  }
+  if(failures)translationWarning=failures===Object.keys(source).length
+    ?"Este idioma no se pudo traducir automáticamente; se muestran textos en inglés como alternativa."
     :"Algunas partes no se pudieron traducir y aparecen en inglés.";
  }
  document.title=t.title;document.querySelector("h1").textContent=t.h1;document.querySelector(".kicker").textContent=t.kicker;document.querySelector(".hero p").textContent=t.intro;
  document.querySelector("#search").placeholder=t.search;document.querySelector("#reset").textContent=t.reset;document.querySelector("#translator-title").textContent=t.translator;document.querySelector("#translator-title").nextElementSibling.textContent=t.translateIntro;
- document.querySelector('label[for="sourceText"]').textContent=t.input;document.querySelector("#sourceText").placeholder=t.input;document.querySelector("#translateBtn").textContent=t.button;document.querySelector("#languageNote").textContent=t.note;document.querySelector("footer").textContent=t.footer;
+ document.querySelector('label[for="sourceText"]').textContent=t.input;document.querySelector("#sourceText").placeholder=t.input;document.querySelector("#translateBtn").textContent=t.button;document.querySelector("#languageNote").textContent=translationWarning||t.note;document.querySelector("footer").textContent=t.footer;
  document.querySelector("#languageLabel").textContent="🌐 "+document.querySelector("#siteLanguage").selectedOptions[0].textContent;
  document.querySelector("#count").textContent="";
  renderResults();
