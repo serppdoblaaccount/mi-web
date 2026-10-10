@@ -113,7 +113,7 @@ const entries = [
 ["Yador","yogur"],["Yevor","yunque"],
 ["Zador","zanahoria"],["Zamor","zumo"],["Zevor","zoológico"],
 ["Dralen","tonto (insulto leve)"],["Kremor","idiota (insulto)"],["Buzek","pesado (insulto coloquial)"],["Fraven","mentiroso"],["Grunel","cobarde"],["Palken","torpe"],["Zorvak","presumido"],["Murek","grosero"],["Naldor","insoportable"],["Sproven","payaso (insulto coloquial)"],["Braket","bocazas"],["Varkel","tramposo"],["Dromek","maleducado"],["Krazel","fastidioso"],["Brelok","cabezota"],["Furnek","quejica"],
-["Ņora","señora"],["Luņa","luna pequeña"],["Peņo","palabra provisional; significado por definir"],["Ņaren","extrañar"],["Ņelen","señal"],["Ņumen","número"],
+["El","el"],["La","la"],["Los","los"],["Las","las"],["Un","un"],["Una","una"],["Unos","unos"],["Unas","unas"],["De","de"],["Del","del"],["Y","y"],["O","o"],["En","en"],["Con","con"],["Por","por"],["Para","para"],["Pero","pero"],["Porque","porque"],["Aunque","aunque"],["Desde","desde"],["Hasta","hasta"],["Sobre","sobre"],["Entre","entre"],["Sin","sin"],["Mi","mi"],["Mis","mis"],["Me","me"],["Te","te"],["Se","se"],["Lo","lo"],["Le","le"],["Les","les"],["Ellos","ellos"],["Ellas","ellas"],["Esto","esto"],["Este","este"],["Eso","eso"],["Esa","esa"],["Aqui","aquí"],["Ahi","ahí"],["Alli","allí"],["Soy","soy"],["Eres","eres"],["Somos","somos"],["Son","son"],["Estoy","estoy"],["Estas","estás"],["Estamos","estamos"],["Estan","están"],["Tengo","tengo"],["Tienes","tienes"],["Tiene","tiene"],["Tenemos","tenemos"],["Quiero","quiero"],["Quieres","quieres"],["Quiere","quiere"],["Puedo","puedo"],["Puedes","puedes"],["Puede","puede"],["Vamos","vamos"],["Van","van"],["Voy","voy"],["Vas","vas"],["Hay","hay"],["Muy","muy"],["Mas","más"],["Menos","menos"],["Bien","bien"],["Mal","mal"],["Tambien","también"],["Tampoco","tampoco"],["Nada","nada"],["Algo","algo"],["Alguien","alguien"],["Nunca","nunca"],["Hoy","hoy"],["Perdon","perdón"],["Amiga","amiga"],["Amigos","amigos"],["Ņora","señora"],["Luņa","luna pequeña"],["Peņo","palabra provisional; significado por definir"],["Ņaren","extrañar"],["Ņelen","señal"],["Ņumen","número"],
 ["Peren","perro"],["Falen","foca"],["Zaven","zorro"],["Muren","mariposa"],["Paven","pan"],["Melen","manzana"],["Koren","carne"],["Laven","leche"],["Saren","sal"],["Daven","ordenador"],["Koden","código"],["Apen","aplicación"],["Gamen","videojuego"],["Belen","blanco"],["Yalen","amarillo"],["Moren","morado"]
 ];
 const normalized = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("es");
@@ -159,7 +159,7 @@ async function translateToSerpano(){
    });
    // Convierte las palabras individuales que ya existen en el diccionario.
    let converted=spanish;
-   converted=converted.replace(/[\\p{L}À-ÿŅņ]+/gu,token=>dictionary.get(normalized(token))||token);
+   converted=converted.replace(/[A-Za-zÀ-ÖØ-öø-ÿŅņ]+/g,token=>dictionary.get(normalized(token))||token);
    output.textContent=converted;
    status.textContent="Traducción detectada al español y adaptada con el vocabulario actual de Serpano.";
  }catch(error){
