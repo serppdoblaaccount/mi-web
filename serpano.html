@@ -139,12 +139,32 @@ function renderAlphabet(){
 }
 function renderResults(){
  const q=normalized(search.value.trim());
- const filtered=entries.filter(([word,meaning])=>(!activeLetter || word.toLocaleUpperCase("es").startsWith(activeLetter)) && (!q || normalized(word).includes(q)||normalized(meaning).includes(q)));
- count.textContent=filtered.length+" entradas mostradas · "+entries.length+" entradas en la lista";
+ const validEntries=entries.filter(entry=>Array.isArray(entry)&&typeof entry[0]==="string"&&typeof entry[1]==="string");
+ const filtered=validEntries.filter(entry=>{
+  const word=entry[0],meaning=entry[1];
+  return (!activeLetter||word.toLocaleUpperCase("es").startsWith(activeLetter))&&(!q||normalized(word).includes(q)||normalized(meaning).includes(q));
+ });
  results.innerHTML="";
+ count.textContent=filtered.length+" entradas mostradas · "+validEntries.length+" entradas en la lista";
  if(!filtered.length){results.innerHTML='<div class="empty">No se encontraron palabras. Prueba otra búsqueda.</div>';return}
- const groups={};filtered.sort((a,b)=>a[0].localeCompare(b[0],"es")).forEach(entry=>{const letter=entry[0].startsWith("Ņ")?"Ņ":entry[0][0].toLocaleUpperCase("es");(groups[letter]??=[]).push(entry)});
- Object.entries(groups).forEach(([letter,items])=>{const section=document.createElement("section");section.className="letter-section";const h=document.createElement("h2");h.textContent=letter;section.appendChild(h);const grid=document.createElement("div");grid.className="words";items.forEach(([word,meaning])=>{const card=document.createElement("article");card.className="word";const strong=document.createElement("strong");strong.textContent=word;const span=document.createElement("span");span.textContent=meaning;span.dataset.originalMeaning=meaning;card.append(strong,span);grid.appendChild(card);translateDefinition(span)});section.appendChild(grid);results.appendChild(section)});
+ const groups={};
+ filtered.sort((a,b)=>a[0].localeCompare(b[0],"es")).forEach(entry=>{
+  const word=entry[0],letter=word.startsWith("Ņ")?"Ņ":word[0].toLocaleUpperCase("es");
+  (groups[letter]??=[]).push(entry);
+ });
+ Object.entries(groups).forEach(([letter,items])=>{
+  const section=document.createElement("section");section.className="letter-section";
+  const h=document.createElement("h2");h.textContent=letter;section.appendChild(h);
+  const grid=document.createElement("div");grid.className="words";
+  items.forEach(([word,meaning])=>{
+   const card=document.createElement("article");card.className="word";
+   const strong=document.createElement("strong");strong.textContent=word;
+   const span=document.createElement("span");span.textContent=meaning;span.dataset.originalMeaning=meaning;
+   card.append(strong,span);grid.appendChild(card);
+   translateDefinition(span).catch(()=>{span.textContent=meaning});
+  });
+  section.appendChild(grid);results.appendChild(section);
+ });
 }
 search.addEventListener("input",renderResults);
 document.querySelector("#reset").addEventListener("click",()=>{search.value="";activeLetter="";renderAlphabet();renderResults()});
