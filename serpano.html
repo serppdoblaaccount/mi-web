@@ -130,15 +130,9 @@ async function translateToSerpano(){
      const key=normalized(meaning);
      if(!dictionary.has(key))dictionary.set(key,serpano);
    });
-   // Reemplaza primero expresiones conocidas y después palabras individuales.
+   // Convierte las palabras individuales que ya existen en el diccionario.
    let converted=spanish;
-   const phrases=[...dictionary.entries()].filter(([meaning])=>meaning.includes(" ")).sort((a,b)=>b[0].length-a[0].length);
-   phrases.forEach(([meaning,word])=>{
-     const pattern=meaning.replace(/[.*+?^${}()|[\]\\]/g,"\\renderAlphabet();renderResults();
-</script>");
-     converted=converted.replace(new RegExp("\\b"+pattern+"\\b","gi"),word);
-   });
-   converted=converted.replace(/[\p{L}À-ÿŅņ]+/gu,token=>dictionary.get(normalized(token))||token);
+   converted=converted.replace(/[\\p{L}À-ÿŅņ]+/gu,token=>dictionary.get(normalized(token))||token);
    output.textContent=converted;
    status.textContent="Traducción detectada al español y adaptada con el vocabulario actual de Serpano.";
  }catch(error){
