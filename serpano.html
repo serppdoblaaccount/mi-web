@@ -24,6 +24,13 @@ input:focus{border-color:var(--accent)}.alphabet{display:flex;flex-wrap:wrap;gap
 .word strong{font-size:1rem}.word span{text-align:right;color:#c1cbe0}
 .empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
 footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:.9rem}
+.translator{margin:30px 0;padding:20px;border:1px solid var(--line);border-radius:18px;background:#111a30}
+.translator h2{margin-top:0;color:var(--accent)}
+.translator textarea,.translator select{width:100%;padding:13px;background:#10182b;color:var(--text);border:1px solid var(--line);border-radius:12px;font:inherit;margin:7px 0 12px}
+.translator textarea{min-height:100px;resize:vertical}
+.translator button{border:0;border-radius:11px;background:var(--accent);color:#11152b;font:inherit;font-weight:700;padding:12px 16px;cursor:pointer}
+.translated{white-space:pre-wrap;overflow-wrap:anywhere;padding:14px;background:#0b1020;border:1px solid var(--line);border-radius:12px;min-height:52px;margin-top:12px}
+.small-note{font-size:.88rem;color:var(--muted)}
 @media(min-width:650px){main{padding-top:44px}.controls{grid-template-columns:1fr auto;align-items:center}}
 </style>
 </head>
@@ -39,6 +46,16 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:v
 </section>
 <nav class="alphabet" id="alphabet" aria-label="Filtrar por letra"></nav>
 <div id="results" aria-live="polite"></div>
+<section class="translator" aria-labelledby="translator-title">
+<h2 id="translator-title">🌍 Traductor a Serpano</h2>
+<p>Escribe una frase en cualquier idioma. El traductor intentará detectarlo, traducirlo al español y convertir las palabras que ya existan en el diccionario de Serpano.</p>
+<label for="sourceText">Texto que quieres traducir</label>
+<textarea id="sourceText" placeholder="Escribe aquí una frase en cualquier idioma…"></textarea>
+<button id="translateBtn" type="button">Traducir a Serpano</button>
+<p id="translationStatus" class="small-note" role="status">Necesita conexión a internet para usar el servicio de traducción.</p>
+<div id="translationResult" class="translated" aria-live="polite">Tu traducción aparecerá aquí.</div>
+<p class="small-note">Importante: Serpano aún no tiene palabras para todo. Las palabras que no estén en el diccionario se conservarán en español, así que el resultado será aproximado y no una traducción completa a un idioma terminado.</p>
+</section>
 <footer>Este es el vocabulario inicial de Serpano y puede ampliarse. Algunas palabras son propuestas provisionales; todavía no es un idioma con un vocabulario completo y una gramática definitiva.</footer>
 </main>
 <script>
@@ -92,5 +109,45 @@ function renderResults(){
 }
 search.addEventListener("input",renderResults);
 document.querySelector("#reset").addEventListener("click",()=>{search.value="";activeLetter="";renderAlphabet();renderResults()});
+async function translateToSerpano(){
+ const input=document.querySelector("#sourceText").value.trim();
+ const status=document.querySelector("#translationStatus");
+ const output=document.querySelector("#translationResult");
+ if(!input){status.textContent="Escribe primero una frase.";return}
+ const button=document.querySelector("#translateBtn");
+ button.disabled=true;button.textContent="Traduciendo…";
+ status.textContent="Detectando idioma y traduciendo al español…";
+ output.textContent="";
+ try{
+   const url="https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=es&dt=t&q="+encodeURIComponent(input);
+   const response=await fetch(url);
+   if(!response.ok)throw new Error("Servicio de traducción no disponible");
+   const data=await response.json();
+   const spanish=(data[0]||[]).map(part=>part[0]||"").join("");
+   if(!spanish)throw new Error("No se pudo traducir el texto");
+   const dictionary=new Map();
+   entries.forEach(([serpano,meaning])=>{
+     const key=normalized(meaning);
+     if(!dictionary.has(key))dictionary.set(key,serpano);
+   });
+   // Reemplaza primero expresiones conocidas y después palabras individuales.
+   let converted=spanish;
+   const phrases=[...dictionary.entries()].filter(([meaning])=>meaning.includes(" ")).sort((a,b)=>b[0].length-a[0].length);
+   phrases.forEach(([meaning,word])=>{
+     const pattern=meaning.replace(/[.*+?^${}()|[\]\\]/g,"\\renderAlphabet();renderResults();
+</script>");
+     converted=converted.replace(new RegExp("\\b"+pattern+"\\b","gi"),word);
+   });
+   converted=converted.replace(/[\p{L}À-ÿŅņ]+/gu,token=>dictionary.get(normalized(token))||token);
+   output.textContent=converted;
+   status.textContent="Traducción detectada al español y adaptada con el vocabulario actual de Serpano.";
+ }catch(error){
+   status.textContent="No se pudo traducir. Comprueba tu conexión e inténtalo otra vez.";
+   output.textContent="El servicio de traducción puede no estar disponible en este momento.";
+ }finally{
+   button.disabled=false;button.textContent="Traducir a Serpano";
+ }
+}
+document.querySelector("#translateBtn").addEventListener("click",translateToSerpano);
 renderAlphabet();renderResults();
 </script></body></html>
