@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101426">
+<title>Diccionario Serpano</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#141c32;--line:#283653;--text:#f3f5ff;--muted:#aab5d0;--accent:#a5b4fc}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#202b50 0,var(--bg) 55%);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{width:min(1000px,100%);margin:auto;padding:28px 18px 60px}
+.hero{padding:30px 22px;border:1px solid var(--line);border-radius:24px;background:#111a30dd}
+.kicker{color:var(--accent);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:.78rem}
+h1{font-size:clamp(2rem,7vw,3.6rem);line-height:1.05;margin:10px 0}p{color:var(--muted)}.hero p{max-width:650px}
+.controls{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+input{width:100%;padding:14px 16px;background:#10182b;color:var(--text);border:1px solid var(--line);border-radius:13px;font:inherit;outline:none}
+input:focus{border-color:var(--accent)}.alphabet{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 22px}
+.alphabet button,.clear{border:1px solid var(--line);background:#151f36;color:var(--text);padding:8px 11px;border-radius:10px;font:inherit;cursor:pointer}
+.alphabet button.active,.alphabet button:hover{background:var(--accent);color:#11152b;border-color:var(--accent)}
+.meta{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:.9rem}
+.letter-section{margin:26px 0}.letter-section h2{border-bottom:1px solid var(--line);padding-bottom:8px;color:var(--accent)}
+.words{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}
+.word{display:flex;justify-content:space-between;gap:16px;align-items:baseline;padding:13px 14px;background:#131c30;border:1px solid #24314b;border-radius:12px}
+.word strong{font-size:1rem}.word span{text-align:right;color:#c1cbe0}
+.empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
+footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:.9rem}
+@media(min-width:650px){main{padding-top:44px}.controls{grid-template-columns:1fr auto;align-items:center}}
+</style>
+</head>
+<body><main>
+<header class="hero">
+<div class="kicker">Idioma inventado · Versión inicial</div>
+<h1>📖 Diccionario<br>de Serpano</h1>
+<p>Busca palabras de Serpano, consulta su significado en español o filtra por letra. La letra especial <strong>ņ</strong> representa el sonido de la ñ española.</p>
+</header>
+<section class="controls" aria-label="Buscar palabras">
+<input id="search" type="search" placeholder="Buscar en Serpano o en español…" aria-label="Buscar palabras">
+<div class="meta"><span id="count">Cargando diccionario…</span><button class="clear" id="reset" type="button">Limpiar filtros</button></div>
+</section>
+<nav class="alphabet" id="alphabet" aria-label="Filtrar por letra"></nav>
+<div id="results" aria-live="polite"></div>
+<footer>Este es el vocabulario inicial de Serpano y puede ampliarse. Algunas palabras son propuestas provisionales; todavía no es un idioma con un vocabulario completo y una gramática definitiva.</footer>
+</main>
+<script>
+const entries = [
+["Aben","abrir"],["Abren","abrazo"],["Ader","ayer"],["Adeu","adiós"],["Afen","hacer"],["Aira","aire"],["Alen","alto"],["Alora","ahora"],["Amaren","amar"],["Anen","año"],["Arel","árbol"],["Asen","así"],["Auren","agua"],["Aven","venir"],["Azur","azul"],
+["Balen","bailar"],["Bena","bueno"],["Beren","beber"],["Bira","vida"],["Boren","buscar"],["Brisa","brisa"],["Brunen","oscuro"],["Buren","burro"],
+["Calen","caliente"],["Cason","casa"],["Celen","cielo"],["Ceren","querer"],["Cira","ciudad"],["Comira","comida"],["Coren","corazón"],["Curen","correr"],
+["Dalen","dar"],["Daren","decir"],["Diena","día"],["Dolen","dolor"],["Doren","dormir"],["Duren","duro"],
+["Elar","estrella"],["Elen","él"],["Elena","ella"],["Emaren","empezar"],["Enar","entrar"],["Eren","ser"],["Esen","estar"],["Evar","escuchar"],
+["Falen","faltar"],["Faren","familia"],["Felen","feliz"],["Feren","frío"],["Firen","fuego"],["Floren","flor"],["Foren","fuerte"],
+["Galen","ganar"],["Garen","grande"],["Gaven","gato"],["Gelar","hielo"],["Geren","gente"],["Golen","gol"],["Grasen","agradecer"],["Grasien","gracias"],["Goren","gris"],
+["Halen","hablar"],["Halo","hola"],["Haren","hermano"],["Haver","haber"],["Helan","helado"],["Heren","hermoso"],["Hiren","herir"],["Holen","hola"],["Horen","hora"],
+["Iden","idea"],["Ilar","isla"],["Imaren","imaginar"],["Inar","ir"],["Iren","intentar"],["Isen","importante"],["Iven","invierno"],
+["Jalen","jamás"],["Jaren","jardín"],["Jasen","joven"],["Jelen","lejos"],["Joren","jugar"],["Juren","juntar"],
+["Kalen","calor"],["Kamen","cambiar"],["Karel","camino"],["Kaven","caballo"],["Kelen","querer"],["Kira","querer mucho"],["Koren","conocer"],
+["Laren","lado"],["Laven","lavar"],["Leden","leer"],["Leren","aprender"],["Lira","libro"],["Liren","libertad"],["Loben","lobo"],["Lumen","luz"],["Luren","luna"],
+["Maden","madre"],["Malen","malo"],["Maren","mar"],["Maten","matar"],["Melen","mejor"],["Meren","mirar"],["Miden","miedo"],["Molen","mundo"],["Muren","mujer"],
+["Narel","amigo"],["Naren","nadar"],["Naven","nave"],["Nelen","necesitar"],["Neren","negro"],["Noka","no"],["Nolen","nombre"],["Nosan","nosotros"],["Nocha","noche"],["Nuren","nuevo"],
+["Ocen","océano"],["Olar","oler"],["Omen","hombre"],["Onar","dónde"],["Oran","oro"],["Oren","orden"],["Osen","oso"],
+["Paden","padre"],["Palen","palabra"],["Paren","parar"],["Pelen","pelo"],["Peren","perder"],["Pesen","pensar"],["Piquen","pequeño"],["Plaren","playa"],["Ploren","llorar"],["Puren","poder"],
+["Qalen","cuál"],["Qaren","querer"],["Qasen","casi"],["Qelen","qué"],["Qeren","quién"],["Qiren","quizá"],["Quoren","corazón"],
+["Ralen","rápido"],["Ramen","rama"],["Raren","raro"],["Rasen","razón"],["Relen","reír"],["Rimen","río"],["Riren","escribir"],["Rolen","rojo"],["Ruren","ruido"],
+["Saben","saber"],["Saren","salir"],["Selen","sol"],["Seya","sí"],["Siden","siempre"],["Siran","sentir"],["Soren","sonrisa"],["Sumen","sumar"],
+["Talen","tal"],["Taren","tarde"],["Taven","tener"],["Telen","teléfono"],["Teren","tierra"],["Tiren","tirar"],["Tolen","todo"],["Tu","tú"],["Tumen","tiempo"],
+["Uben","subir"],["Uden","usted"],["Ular","usar"],["Umen","humano"],["Unen","unir"],["Uren","uno"],["Usen","utilizar"],
+["Vaden","verdad"],["Valen","valer"],["Varen","ver"],["Velen","verde"],["Vesen","vestir"],["Viden","vídeo"],["Vira","vida"],["Voren","volver"],
+["Web","página web"],["Wiken","semana"],["Wiren","conexión inalámbrica"],
+["Xalen","examen"],["Xaren","extraño"],["Xelen","excelente"],["Xiren","existir"],["Xoren","explorar"],
+["Yaren","ayudar"],["Yelen","yema"],["Yeren","ayer"],["Yiren","irse"],["Yoren","yo"],["Yumen","humano"],
+["Zalen","zapato"],["Zaren","cerrar"],["Zelen","azul"],["Zeren","cero"],["Ziren","sonrisa"],["Zoren","zona"],["Zuren","zurdo"],
+["Ņora","señora"],["Luņa","luna pequeña"],["Peņo","palabra provisional; significado por definir"],["Ņaren","extrañar"],["Ņelen","señal"],["Ņumen","número"],
+["Peren","perro"],["Falen","foca"],["Zaven","zorro"],["Muren","mariposa"],["Paven","pan"],["Melen","manzana"],["Koren","carne"],["Laven","leche"],["Saren","sal"],["Daven","ordenador"],["Koden","código"],["Apen","aplicación"],["Gamen","videojuego"],["Belen","blanco"],["Yalen","amarillo"],["Moren","morado"]
+];
+const normalized = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("es");
+const letters = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","Ņ","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+let activeLetter = "";
+const search = document.querySelector("#search"), results = document.querySelector("#results"), count = document.querySelector("#count"), alphabet = document.querySelector("#alphabet");
+function renderAlphabet(){
+ alphabet.innerHTML="";
+ const all=document.createElement("button");all.textContent="Todas";all.className=activeLetter===""?"active":"";all.onclick=()=>{activeLetter="";renderAlphabet();renderResults()};alphabet.appendChild(all);
+ letters.forEach(letter=>{const b=document.createElement("button");b.textContent=letter;b.className=activeLetter===letter?"active":"";b.onclick=()=>{activeLetter=activeLetter===letter?"":letter;renderAlphabet();renderResults()};alphabet.appendChild(b)});
+}
+function renderResults(){
+ const q=normalized(search.value.trim());
+ const filtered=entries.filter(([word,meaning])=>(!activeLetter || word.toLocaleUpperCase("es").startsWith(activeLetter)) && (!q || normalized(word).includes(q)||normalized(meaning).includes(q)));
+ count.textContent=filtered.length+" entradas mostradas · "+entries.length+" entradas en la lista";
+ results.innerHTML="";
+ if(!filtered.length){results.innerHTML='<div class="empty">No se encontraron palabras. Prueba otra búsqueda.</div>';return}
+ const groups={};filtered.sort((a,b)=>a[0].localeCompare(b[0],"es")).forEach(entry=>{const letter=entry[0].startsWith("Ņ")?"Ņ":entry[0][0].toLocaleUpperCase("es");(groups[letter]??=[]).push(entry)});
+ Object.entries(groups).forEach(([letter,items])=>{const section=document.createElement("section");section.className="letter-section";const h=document.createElement("h2");h.textContent=letter;section.appendChild(h);const grid=document.createElement("div");grid.className="words";items.forEach(([word,meaning])=>{const card=document.createElement("article");card.className="word";const strong=document.createElement("strong");strong.textContent=word;const span=document.createElement("span");span.textContent=meaning;card.append(strong,span);grid.appendChild(card)});section.appendChild(grid);results.appendChild(section)});
+}
+search.addEventListener("input",renderResults);
+document.querySelector("#reset").addEventListener("click",()=>{search.value="";activeLetter="";renderAlphabet();renderResults()});
+renderAlphabet();renderResults();
+</script></body></html>
