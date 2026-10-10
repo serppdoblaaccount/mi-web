@@ -225,12 +225,28 @@ async function setPageLanguage(lang){
   t=serpanoUI;
  }else if(!t){
   t={};const source={title:"Diccionario de Serpano",h1:"Diccionario de Serpano",kicker:uiOriginal.kicker,intro:uiOriginal.intro,search:uiOriginal.search,reset:uiOriginal.reset,translator:uiOriginal.translator,translateIntro:uiOriginal.translateIntro,input:uiOriginal.input,button:uiOriginal.button,note:uiOriginal.note,footer:uiOriginal.footer};
-  try{
-   await Promise.all(Object.entries(source).map(async([key,value])=>{
+  const fallback=languageFixed.en;
+  const tasks=await Promise.allSettled(Object.entries(source).map(async([key,value])=>{
+    const cacheKey=lang+"|ui|"+value;
+    if(definitionCache.has(cacheKey))return [key,definitionCache.get(cacheKey)];
     const url="https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl="+encodeURIComponent(lang)+"&dt=t&q="+encodeURIComponent(value);
-    const res=await fetch(url);if(!res.ok)throw new Error("translation");const data=await res.json();t[key]=(data[0]||[]).map(p=>p[0]||"").join("");
-   }));
-  }catch(e){document.querySelector("#languageNote").textContent="Translation service unavailable. Check your internet connection.";return;}
+    const res=await fetch(url);
+    if(!res.ok)throw new Error("Language not supported");
+    const data=await res.json();
+    const translated=(data[0]||[]).map(p=>p[0]||"").join("");
+    if(!translated)throw new Error("Empty translation");
+    definitionCache.set(cacheKey,translated);
+    return [key,translated];
+  }));
+  let failures=0;
+  tasks.forEach((task,index)=>{
+    const key=Object.keys(source)[index];
+    if(task.status==="fulfilled")t[task.value[0]]=task.value[1];
+    else{t[key]=fallback[key]||source[key];failures++;}
+  });
+  if(failures)document.querySelector("#languageNote").textContent=failures===Object.keys(source).length
+    ?"Este idioma puede no estar disponible en el traductor; la interfaz se muestra en inglés como alternativa."
+    :"Algunas partes no se pudieron traducir y aparecen en inglés.";
  }
  document.title=t.title;document.querySelector("h1").textContent=t.h1;document.querySelector(".kicker").textContent=t.kicker;document.querySelector(".hero p").textContent=t.intro;
  document.querySelector("#search").placeholder=t.search;document.querySelector("#reset").textContent=t.reset;document.querySelector("#translator-title").textContent=t.translator;document.querySelector("#translator-title").nextElementSibling.textContent=t.translateIntro;
