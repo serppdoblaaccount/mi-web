@@ -343,7 +343,14 @@ initializeDictionary();
 // Galletita divertida: genera el sonido en el dispositivo, sin archivos externos.
 (function setupCookie(){
  const button=document.querySelector("#cookieButton");
- if(!button)return;
+ const zone=document.querySelector(".cookie-zone");
+ const trigger=document.querySelector("#floatingEmoji");
+ if(!button||!zone||!trigger)return;
+ trigger.addEventListener("click",()=>{
+  zone.classList.add("cookie-visible");
+  trigger.hidden=true;
+  zone.scrollIntoView({behavior:"smooth",block:"center"});
+ });
  let audioContext=null;
  button.addEventListener("click",()=>{
   button.classList.remove("pop");
