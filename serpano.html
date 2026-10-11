@@ -32,7 +32,7 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:v
 .translated{white-space:pre-wrap;overflow-wrap:anywhere;padding:14px;background:#0b1020;border:1px solid var(--line);border-radius:12px;min-height:52px;margin-top:12px}
 .small-note{font-size:.88rem;color:var(--muted)}
 @media(min-width:650px){main{padding-top:44px}.controls{grid-template-columns:1fr auto;align-items:center}}
-.cookie-zone{display:flex;justify-content:center;margin:0 0 18px}.cookie-button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 18px;border:1px solid #59432f;border-radius:18px;background:#171b2b;color:var(--text);font:inherit;cursor:pointer;transition:transform .12s,border-color .12s;touch-action:manipulation}.cookie-button:hover{border-color:#d99a4e;transform:translateY(-2px)}.cookie-button:active{transform:scale(.94)}.cookie-button svg{width:82px;height:82px;filter:drop-shadow(0 5px 5px #0005)}.cookie-label{font-weight:700;color:#f4c27b}.cookie-count{font-size:.8rem;color:var(--muted)}@keyframes cookiePop{0%{transform:scale(1) rotate(0)}40%{transform:scale(1.13) rotate(-8deg)}100%{transform:scale(1) rotate(0)}}.cookie-button.pop svg{animation:cookiePop .25s ease}</style>
+.cookie-zone{display:flex;justify-content:center;margin:0 0 18px}.cookie-button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 18px;border:1px solid #59432f;border-radius:18px;background:#171b2b;color:var(--text);font:inherit;cursor:pointer;transition:transform .12s,border-color .12s;touch-action:manipulation}.cookie-button:hover{border-color:#d99a4e;transform:translateY(-2px)}.cookie-button:active{transform:scale(.94)}.cookie-button,.cookie-button *{-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;outline:none}.cookie-button:focus,.cookie-button:focus-visible{outline:none;box-shadow:none}.cookie-button svg{width:82px;height:82px;filter:drop-shadow(0 5px 5px #0005);pointer-events:none}.cookie-label{font-weight:700;color:#f4c27b;pointer-events:none}@keyframes cookiePop{0%{transform:scale(1) rotate(0)}40%{transform:scale(1.13) rotate(-8deg)}100%{transform:scale(1) rotate(0)}}.cookie-button.pop svg{animation:cookiePop .25s ease}</style>
 </head>
 <body><main>
 <section class="cookie-zone" aria-label="Galletita interactiva">
@@ -43,7 +43,6 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:v
 <g fill="#63391f"><ellipse cx="43" cy="37" rx="6" ry="8" transform="rotate(-25 43 37)"/><ellipse cx="73" cy="28" rx="7" ry="5" transform="rotate(20 73 28)"/><ellipse cx="87" cy="53" rx="6" ry="8" transform="rotate(-18 87 53)"/><ellipse cx="54" cy="62" rx="8" ry="6" transform="rotate(30 54 62)"/><ellipse cx="33" cy="77" rx="6" ry="8" transform="rotate(18 33 77)"/><ellipse cx="70" cy="88" rx="7" ry="5" transform="rotate(-25 70 88)"/><ellipse cx="83" cy="76" rx="4" ry="5"/></g>
 </svg>
 <span class="cookie-label">¡Pulsa la galletita!</span>
-<span id="cookieCount" class="cookie-count">0 mordiscos</span>
 </button>
 </section>
 <header class="hero">
@@ -344,12 +343,9 @@ initializeDictionary();
 // Galletita divertida: genera el sonido en el dispositivo, sin archivos externos.
 (function setupCookie(){
  const button=document.querySelector("#cookieButton");
- const count=document.querySelector("#cookieCount");
- if(!button||!count)return;
- let bites=0,audioContext=null;
+ if(!button)return;
+ let audioContext=null;
  button.addEventListener("click",()=>{
-  bites++;
-  count.textContent=bites+(bites===1?" mordisco":" mordiscos");
   button.classList.remove("pop");
   void button.offsetWidth;
   button.classList.add("pop");
