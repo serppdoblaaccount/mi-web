@@ -172,33 +172,51 @@ async function translateToSerpano(){
  const input=document.querySelector("#sourceText").value.trim();
  const status=document.querySelector("#translationStatus");
  const output=document.querySelector("#translationResult");
- if(!input){status.textContent="Escribe primero una frase.";return}
+ if(!input){status.textContent="Escribe primero una frase.";output.textContent="";return}
  const button=document.querySelector("#translateBtn");
  button.disabled=true;button.textContent="Traduciendo…";
- status.textContent="Detectando idioma y traduciendo al español…";
+ status.textContent="Intentando traducir el texto…";
  output.textContent="";
+ const convertSpanishToSerpano=spanish=>{
+  const dictionary=new Map();
+  entries.forEach(entry=>{
+   if(!Array.isArray(entry)||typeof entry[0]!=="string"||typeof entry[1]!=="string")return;
+   const key=normalized(entry[1]);
+   if(!dictionary.has(key))dictionary.set(key,entry[0]);
+  });
+  return spanish.replace(/[A-Za-zÀ-ÖØ-öø-ÿŅņ]+/g,token=>dictionary.get(normalized(token))||token);
+ };
  try{
+  let spanish=input;
+  let translatedFromOtherLanguage=false;
+  try{
    const url="https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=es&dt=t&q="+encodeURIComponent(input);
-   const response=await fetch(url);
-   if(!response.ok)throw new Error("Servicio de traducción no disponible");
-   const data=await response.json();
-   const spanish=(data[0]||[]).map(part=>part[0]||"").join("");
-   if(!spanish)throw new Error("No se pudo traducir el texto");
-   const dictionary=new Map();
-   entries.forEach(([serpano,meaning])=>{
-     const key=normalized(meaning);
-     if(!dictionary.has(key))dictionary.set(key,serpano);
-   });
-   // Convierte las palabras individuales que ya existen en el diccionario.
-   let converted=spanish;
-   converted=converted.replace(/[A-Za-zÀ-ÖØ-öø-ÿŅņ]+/g,token=>dictionary.get(normalized(token))||token);
-   output.textContent=converted;
-   status.textContent="Traducción detectada al español y adaptada con el vocabulario actual de Serpano.";
+   const controller=new AbortController();
+   const timeout=setTimeout(()=>controller.abort(),8000);
+   try{
+    const response=await fetch(url,{signal:controller.signal});
+    if(!response.ok)throw new Error("Servicio no disponible");
+    const data=await response.json();
+    const result=(data[0]||[]).map(part=>part[0]||"").join("").trim();
+    if(!result)throw new Error("Respuesta vacía");
+    spanish=result;
+    translatedFromOtherLanguage=true;
+   }finally{clearTimeout(timeout);}
+  }catch(translationError){
+   // Si el servicio externo falla, aún podemos convertir las palabras españolas que estén en el diccionario.
+   spanish=input;
+  }
+  output.textContent=convertSpanishToSerpano(spanish);
+  if(translatedFromOtherLanguage){
+   status.textContent="Texto traducido al español y convertido con las palabras disponibles en Serpano. Las palabras que no están en el diccionario se mantienen igual.";
+  }else{
+   status.textContent="Se ha usado el texto tal como lo escribiste porque el servicio de traducción no respondió. Se han convertido las palabras españolas que existen en el diccionario.";
+  }
  }catch(error){
-   status.textContent="No se pudo traducir. Comprueba tu conexión e inténtalo otra vez.";
-   output.textContent="El servicio de traducción puede no estar disponible en este momento.";
+  status.textContent="No se pudo procesar el texto. Inténtalo otra vez.";
+  output.textContent=input;
  }finally{
-   button.disabled=false;button.textContent="Traducir a Serpano";
+  button.disabled=false;button.textContent="Traducir a Serpano";
  }
 }
 document.querySelector("#translateBtn").addEventListener("click",translateToSerpano);
